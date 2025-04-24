@@ -6,7 +6,7 @@
     <input
       v-model="searchValue"
       type="text"
-      placeholder="Filtrer une heure (ex: 12:00)"
+      placeholder="Filtrer une heure (ex: 14h00)"
       class="mb-4 p-2 border border-gray-300 rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
     />
 
@@ -19,13 +19,13 @@
     </button>
 
     <!-- ⏳ Chargement -->
-    <div v-if="store.loading" class="text-center text-gray-500 py-6">
+    <div v-if="loading" class="text-center text-gray-500 py-6">
       ⏳ Chargement des prévisions météo...
     </div>
 
     <!-- ❌ Erreur -->
-    <div v-else-if="store.error" class="text-red-500 text-center py-6">
-      ❌ Erreur : {{ store.error.message }}
+    <div v-else-if="error" class="text-red-500 text-center py-6">
+      ❌ Erreur : {{ error.message }}
     </div>
 
     <!-- ✅ Tableau météo -->
@@ -33,6 +33,7 @@
       <table class="min-w-full table-auto border border-gray-300 rounded-lg overflow-hidden shadow">
         <thead class="bg-gray-50 text-left">
           <tr>
+            <th class="p-3 font-semibold text-gray-700">Jour</th>
             <th class="p-3 font-semibold text-gray-700">Heure</th>
             <th class="p-3 font-semibold text-gray-700">Température (°C)</th>
           </tr>
@@ -43,7 +44,8 @@
             :key="index"
             class="hover:bg-gray-100 transition"
           >
-            <td class="p-3 border-t border-gray-200">{{ entry.time }}</td>
+            <td class="p-3 border-t border-gray-200">{{ entry.day }}</td>
+            <td class="p-3 border-t border-gray-200">{{ entry.hour }}</td>
             <td class="p-3 border-t border-gray-200">
               <span
                 :class="{
@@ -80,7 +82,7 @@
 
       <!-- 🕳️ Aucun résultat -->
       <div
-        v-if="!filteredHours.length && !store.loading && !store.error"
+        v-if="!filteredHours.length && !loading && !error"
         class="text-center text-gray-400 mt-4"
       >
         Aucun résultat trouvé.
@@ -90,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, computed, defineProps, defineEmits } from 'vue'
 import { useMeteoStore } from '@/stores/meteoStore'
 
 const props = defineProps<{ search: string }>()
@@ -102,15 +104,32 @@ const searchValue = computed({
 })
 
 const store = useMeteoStore()
-onMounted(() => store.fetchMeteo())
+const loading = computed(() => store.loading)
+const error = computed(() => store.error)
 
 const page = ref(1)
 const perPage = 6
 
+// 🕒 Format: "14h00"
+const formatHeureFr = (heure: string) => `${heure.slice(0, 2)}h${heure.slice(3, 5)}`
+
+// 📅 Format: "24-04-2025"
+const formatDateFr = (isoDate: string) => {
+  const [year, month, day] = isoDate.split('-')
+  return `${day}-${month}-${year}`
+}
+
 const filteredHours = computed(() =>
   store.time
-    .map((t, i) => ({ time: t, temp: store.temperature[i] }))
-    .filter(entry => entry.time.includes(searchValue.value))
+    .map((t, i) => {
+      const [day, hour] = t.split('T')
+      return {
+        day: formatDateFr(day),
+        hour: formatHeureFr(hour),
+        temp: store.temperature[i]
+      }
+    })
+    .filter(entry => entry.hour.includes(searchValue.value))
 )
 
 const totalPages = computed(() => Math.ceil(filteredHours.value.length / perPage))
@@ -128,9 +147,9 @@ function prevPage() {
 }
 
 function exportCSV() {
-  const rows = [['Heure', 'Température']]
+  const rows = [['Jour', 'Heure', 'Température']]
   filteredHours.value.forEach(entry => {
-    rows.push([entry.time, `${entry.temp} °C`])
+    rows.push([entry.day, entry.hour, `${entry.temp} °C`])
   })
   const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' })
   const url = window.URL.createObjectURL(blob)
