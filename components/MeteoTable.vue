@@ -2,13 +2,21 @@
   <div>
     <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">🌤️ Prévisions horaires (Paris)</h2>
 
-    <!-- 🔍 Barre de recherche -->
+    <!-- 🔍 Recherche -->
     <input
-      v-model="search"
+      v-model="searchValue"
       type="text"
       placeholder="Filtrer une heure (ex: 12:00)"
-      class="mb-6 p-2 border border-gray-300 rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+      class="mb-4 p-2 border border-gray-300 rounded w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
     />
+
+    <!-- 📤 Export CSV -->
+    <button
+      @click="exportCSV"
+      class="mb-6 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+    >
+      ⬇️ Exporter en CSV
+    </button>
 
     <!-- ⏳ Chargement -->
     <div v-if="store.loading" class="text-center text-gray-500 py-6">
@@ -20,7 +28,7 @@
       ❌ Erreur : {{ store.error.message }}
     </div>
 
-    <!-- ✅ Tableau -->
+    <!-- ✅ Tableau météo -->
     <div v-else class="overflow-x-auto">
       <table class="min-w-full table-auto border border-gray-300 rounded-lg overflow-hidden shadow">
         <thead class="bg-gray-50 text-left">
@@ -31,20 +39,20 @@
         </thead>
         <tbody>
           <tr
-            v-for="(hour, index) in paginatedHours"
+            v-for="(entry, index) in paginatedHours"
             :key="index"
             class="hover:bg-gray-100 transition"
           >
-            <td class="p-3 border-t border-gray-200">{{ hour }}</td>
+            <td class="p-3 border-t border-gray-200">{{ entry.time }}</td>
             <td class="p-3 border-t border-gray-200">
               <span
                 :class="{
-                  'text-blue-500': store.temperature[index] <= 10,
-                  'text-yellow-600': store.temperature[index] > 10 && store.temperature[index] < 25,
-                  'text-red-600': store.temperature[index] >= 25
+                  'text-blue-500': entry.temp <= 10,
+                  'text-yellow-600': entry.temp > 10 && entry.temp < 25,
+                  'text-red-600': entry.temp >= 25
                 }"
               >
-                {{ store.temperature[index] }} °C
+                {{ entry.temp }} °C
               </span>
             </td>
           </tr>
@@ -60,9 +68,7 @@
         >
           ◀ Précédent
         </button>
-
         <span class="text-sm text-gray-600">Page {{ page }} / {{ totalPages }}</span>
-
         <button
           @click="nextPage"
           :disabled="page >= totalPages"
@@ -84,29 +90,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, defineProps, defineEmits, onMounted } from 'vue'
 import { useMeteoStore } from '@/stores/meteoStore'
+
+const props = defineProps<{ search: string }>()
+const emit = defineEmits(['update:search'])
+
+const searchValue = computed({
+  get: () => props.search,
+  set: val => emit('update:search', val)
+})
 
 const store = useMeteoStore()
 onMounted(() => store.fetchMeteo())
 
-const search = ref('')
 const page = ref(1)
 const perPage = 6
 
-// 🔍 Filtrage
 const filteredHours = computed(() =>
   store.time
     .map((t, i) => ({ time: t, temp: store.temperature[i] }))
-    .filter(entry => entry.time.includes(search.value))
+    .filter(entry => entry.time.includes(searchValue.value))
 )
 
 const totalPages = computed(() => Math.ceil(filteredHours.value.length / perPage))
 
 const paginatedHours = computed(() =>
-  filteredHours.value
-    .slice((page.value - 1) * perPage, page.value * perPage)
-    .map(entry => entry.time)
+  filteredHours.value.slice((page.value - 1) * perPage, page.value * perPage)
 )
 
 function nextPage() {
@@ -115,5 +125,19 @@ function nextPage() {
 
 function prevPage() {
   if (page.value > 1) page.value--
+}
+
+function exportCSV() {
+  const rows = [['Heure', 'Température']]
+  filteredHours.value.forEach(entry => {
+    rows.push([entry.time, `${entry.temp} °C`])
+  })
+  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'previsions_meteo.csv'
+  a.click()
+  window.URL.revokeObjectURL(url)
 }
 </script>
