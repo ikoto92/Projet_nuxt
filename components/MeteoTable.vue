@@ -98,13 +98,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
-import { useMeteoTable } from '~~/composables/useMeteoTable'
+import { useMeteoTable } from '@/composables/useMeteoTable'
 import { useExport } from '@/composables/useExport'
+import { useDarkMode } from '@/composables/useDarkMode'
 
-// ✅ Tu n'as PLUS besoin de réimporter html2canvas ou jsPDF ici
-// car c'est déjà géré dans useMeteoTable !!!
+interface MeteoProps {
+  search: string
+  date: string
+}
 
-const props = defineProps<{ search: string; date: string }>()
+const props = defineProps<MeteoProps>()
 const emit = defineEmits(['update:search', 'update:date'])
 
 const searchValue = computed({
@@ -123,10 +126,10 @@ const {
   filtered: filteredHours,
   nextPage,
   prevPage,
-  isDark,
-  toggleDark,
-  exportPDF // ✅ Ici on récupère correctement exportPDF
+  exportPDF
 } = useMeteoTable(searchValue, searchDate)
+
+const { isDark, toggleDark } = useDarkMode()
 
 const { exportToCSV, exportToXLSX } = useExport()
 
