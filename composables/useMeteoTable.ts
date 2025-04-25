@@ -2,40 +2,44 @@ import { ref, computed } from 'vue'
 import { useMeteoStore } from '@/stores/meteoStore'
 import type { Ref } from 'vue'
 
-export function useMeteoTable(search: Ref<string>) {
+export function useMeteoTable(searchValue: Ref<string>, searchDate: Ref<string>) {
   const store = useMeteoStore()
   const page = ref(1)
-  const perPage = ref(6) // ✅ maintenant c'est un Ref
+  const perPage = 6 // 👈 pas de ref ici
 
-  const formatDateFr = (d: string) => {
-    const [y, m, day] = d.split('-')
-    return `${day}-${m}-${y}`
+  const formatDateFr = (date: string) => {
+    const [year, month, day] = date.split('-')
+    return `${day}-${month}-${year}`
   }
 
-  const formatHeureFr = (h: string) => `${h.slice(0, 2)}h${h.slice(3, 5)}`
+  const formatHeureFr = (hour: string) => `${hour.slice(0, 2)}h${hour.slice(3, 5)}`
 
   const filtered = computed(() =>
-    store.time.map((t, i) => {
-      const [d, h] = t.split('T')
+    store.time.map((time, i) => {
+      const [datePart, hourPart] = time.split('T')
       return {
-        day: formatDateFr(d),
-        hour: formatHeureFr(h),
+        day: formatDateFr(datePart),
+        hour: formatHeureFr(hourPart),
         temp: store.temperature[i]
       }
-    }).filter(e => e.hour.includes(search.value))
+    }).filter(entry => {
+      const matchesHour = searchValue.value ? entry.hour.includes(searchValue.value) : true
+      const matchesDate = searchDate.value ? entry.day === formatDateFr(searchDate.value) : true
+      return matchesHour && matchesDate
+    })
   )
 
-  const totalPages = computed(() => Math.ceil(filtered.value.length / perPage.value))
+  const totalPages = computed(() => Math.ceil(filtered.value.length / perPage))
 
   const paginated = computed(() =>
-    filtered.value.slice((page.value - 1) * perPage.value, page.value * perPage.value)
+    filtered.value.slice((page.value - 1) * perPage, page.value * perPage)
   )
 
-  const nextPage = () => {
+  function nextPage() {
     if (page.value < totalPages.value) page.value++
   }
 
-  const prevPage = () => {
+  function prevPage() {
     if (page.value > 1) page.value--
   }
 

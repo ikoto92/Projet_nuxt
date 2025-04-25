@@ -1,9 +1,9 @@
 <template>
-  <div class="space-y-4">
-    <!-- 🔍 Barre de recherche -->
-    <SearchBar v-model="searchValue" />
+  <div class="space-y-6 mx-[30px] my-6">
+    <!-- 🔍 Barre de recherche combinée -->
+    <SearchBar v-model="searchValue" v-model:date="searchDate" />
 
-      <!-- 📤 Export -->
+    <!-- 📤 Boutons d'export -->
     <div class="flex justify-center">
       <div class="flex flex-wrap gap-2 justify-center">
         <button @click="exportData('csv', false)" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -52,6 +52,13 @@
               </span>
             </td>
           </tr>
+
+          <!-- ✅ Moyenne -->
+          <tr v-if="paginatedHours.length" class="bg-gray-50 border-t">
+            <td class="p-4 font-semibold text-gray-700">Moyenne</td>
+            <td class="p-4 font-semibold text-gray-700">—</td>
+            <td class="p-4 font-semibold text-gray-700">{{ moyenneTemp }} °C</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -78,17 +85,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import { useMeteoTable } from '~~/composables/useMeteoTable'
 import { useExport } from '@/composables/useExport'
 
-const props = defineProps<{ search: string }>()
-const emit = defineEmits(['update:search'])
+const props = defineProps<{ search: string; date: string }>()
+const emit = defineEmits(['update:search', 'update:date'])
 
 const searchValue = computed({
   get: () => props.search,
   set: (val) => emit('update:search', val)
+})
+const searchDate = computed({
+  get: () => props.date,
+  set: (val) => emit('update:date', val)
 })
 
 const {
@@ -98,7 +109,7 @@ const {
   filtered: filteredHours,
   nextPage,
   prevPage
-} = useMeteoTable(searchValue)
+} = useMeteoTable(searchValue, searchDate)
 
 const { exportToCSV, exportToXLSX } = useExport()
 
@@ -110,4 +121,11 @@ function exportData(type: 'csv' | 'xlsx', all: boolean) {
   if (type === 'csv') exportToCSV(data, headers, filename)
   else exportToXLSX(data, headers, filename)
 }
+
+const moyenneTemp = computed(() => {
+  const data = paginatedHours.value
+  if (!data.length) return '—'
+  const sum = data.reduce((acc, e) => acc + e.temp, 0)
+  return (sum / data.length).toFixed(1)
+})
 </script>

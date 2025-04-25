@@ -14,23 +14,23 @@
 </template>
 
 <script setup lang="ts">
-import { withDefaults, computed, toRef } from 'vue'
-import { Bar } from 'vue-chartjs'
-import {
-  Chart as ChartJS,
-  Title, Tooltip, Legend,
-  BarElement, CategoryScale, LinearScale
-} from 'chart.js'
-import { useMeteoChart } from '@/composables/useMeteoChart'
+  import { withDefaults, computed, toRef } from 'vue'
+  import { Bar } from 'vue-chartjs'
+  import {
+    Chart as ChartJS,
+    Title, Tooltip, Legend,
+    BarElement, CategoryScale, LinearScale
+  } from 'chart.js'
+  import { useMeteoChart } from '@/composables/useMeteoChart'
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+  ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const props = withDefaults(defineProps<{
-  data?: { time: string; temp: number }[]
-}>(), {
-  data: () => []
-})
+  const props = withDefaults(defineProps<{
+    data?: { time: string; temp: number }[]
+  }>(), {
+    data: () => []
+  })
 
-const chartInput = toRef(props, 'data')
-const { chartData, chartOptions } = useMeteoChart(chartInput)
+  const chartInput = toRef(props, 'data')
+  const { chartData, chartOptions } = useMeteoChart(chartInput)
 </script>
