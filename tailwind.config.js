@@ -1,13 +1,14 @@
+// tailwind.config.ts
+
 export default {
-    content: [
-      './components/**/*.{vue,js}',
-      './layouts/**/*.{vue,js}',
-      './pages/**/*.{vue,js}',
-      './app.vue'
-    ],
-    theme: {
-      extend: {},
-    },
-    plugins: [],
-  }
-  
+  content: [
+    './components/**/*.{vue,js,ts}',
+    './layouts/**/*.{vue,js,ts}',
+    './pages/**/*.{vue,js,ts}',
+    './app.vue'
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: []
+}

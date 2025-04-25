@@ -1,6 +1,8 @@
+// nuxt.config.ts
+
 export default defineNuxtConfig({
   css: [
-    '@/assets/css/main.css',
+    '@/assets/css/main.css', // <-- Ton CSS avec Tailwind
     'vue3-easy-data-table/dist/style.css'
   ],
 
@@ -8,7 +10,7 @@ export default defineNuxtConfig({
 
   postcss: {
     plugins: {
-      '@tailwindcss/postcss': {},  // ✅ plugin spécifique
+      '@tailwindcss/postcss': {}, // ✅ Tailwind v4
       autoprefixer: {}
     }
   },

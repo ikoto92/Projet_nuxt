@@ -8,14 +8,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { withDefaults, computed, toRef } from 'vue'
 import { Bar } from 'vue-chartjs'
 import {
   Chart as ChartJS,
   Title, Tooltip, Legend,
   BarElement, CategoryScale, LinearScale
 } from 'chart.js'
-import type { ChartOptions } from 'chart.js'
+
+import { useMeteoChart } from '@/composables/useMeteoChart'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
@@ -25,25 +26,7 @@ const props = withDefaults(defineProps<{
   data: () => []
 })
 
-const chartData = computed(() => ({
-  labels: props.data.map(e => e.time),
-  datasets: [
-    {
-      label: 'Température par heure (°C)',
-      data: props.data.map(e => e.temp),
-      backgroundColor: 'rgba(54, 162, 235, 0.5)'
-    }
-  ]
-}))
-
-const chartOptions: ChartOptions<'bar'> = {
-  responsive: true,
-  plugins: {
-    legend: { position: 'top' },
-    title: {
-      display: true,
-      text: 'Température heure par heure (Paris)'
-    }
-  }
-}
+// 🔁 Rendre les props réactives pour le composable
+const chartInput = toRef(props, 'data')
+const { chartData, chartOptions } = useMeteoChart(chartInput)
 </script>

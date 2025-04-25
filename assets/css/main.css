@@ -1,5 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
 
 /* Tu peux aussi ajouter tes propres styles ici */
+body {
+  font-family: 'Inter', sans-serif;
+}
