@@ -1,15 +1,23 @@
 <template>
   <div class="space-y-4">
-    <!-- 🔍 Barre de recherche (déjà intégrée dans le parent via v-model) -->
+    <!-- 🔍 Barre de recherche -->
     <SearchBar v-model="searchValue" />
 
-    <!-- 📤 Export CSV -->
-    <button
-      @click="exportCSV"
-      class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-    >
-      ⬇️ Exporter en CSV
-    </button>
+    <!-- 📤 Export -->
+    <div class="flex flex-wrap gap-2">
+      <button @click="exportData('csv', false)" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        🔄 Export page (CSV)
+      </button>
+      <button @click="exportData('csv', true)" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        📦 Export complet (CSV)
+      </button>
+      <button @click="exportData('xlsx', false)" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+        🔄 Export page (XLSX)
+      </button>
+      <button @click="exportData('xlsx', true)" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+        📦 Export complet (XLSX)
+      </button>
+    </div>
 
     <!-- 🧾 Tableau météo -->
     <div class="relative flex flex-col w-full overflow-auto text-gray-700 bg-white shadow-md rounded-xl">
@@ -71,6 +79,7 @@
 import { computed } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import { useMeteoTable } from '~~/composables/useMeteoTable'
+import { useExport } from '@/composables/useExport'
 
 const props = defineProps<{ search: string }>()
 const emit = defineEmits(['update:search'])
@@ -87,20 +96,16 @@ const {
   filtered: filteredHours,
   nextPage,
   prevPage
-} =  useMeteoTable(searchValue) // ✅ on passe bien un Ref
+} = useMeteoTable(searchValue)
 
+const { exportToCSV, exportToXLSX } = useExport()
 
-function exportCSV() {
-  const rows = [['Jour', 'Heure', 'Température']]
-  filteredHours.value.forEach(entry => {
-    rows.push([entry.day, entry.hour, `${entry.temp} °C`])
-  })
-  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'previsions_meteo.csv'
-  link.click()
-  URL.revokeObjectURL(url)
+function exportData(type: 'csv' | 'xlsx', all: boolean) {
+  const data = all ? filteredHours.value : paginatedHours.value
+  const headers = ['day', 'hour', 'temp']
+  const filename = all ? 'previsions_meteo_complet' : 'previsions_meteo_page'
+
+  if (type === 'csv') exportToCSV(data, headers, filename)
+  else exportToXLSX(data, headers, filename)
 }
 </script>
