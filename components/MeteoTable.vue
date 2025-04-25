@@ -1,5 +1,10 @@
 <template>
-  <div class="space-y-6 mx-[30px] my-6">
+  <div class="my-6 space-y-6 mx-[30px]">
+    <!-- 🌙 Toggle mode sombre -->
+    <button @click="toggleDark" class="fixed top-4 right-4 z-50 px-3 py-1 bg-gray-700 text-white rounded">
+      {{ isDark ? '☀️ Mode clair' : '🌙 Mode sombre' }}
+    </button>
+
     <!-- 🔍 Barre de recherche combinée -->
     <SearchBar v-model="searchValue" v-model:date="searchDate" />
 
@@ -18,11 +23,14 @@
         <button @click="exportData('xlsx', true)" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
           📦 Export complet (XLSX)
         </button>
+        <button @click="exportPDF" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+          📄 Exporter en PDF
+        </button>
       </div>
     </div>
 
-    <!-- 🧾 Tableau météo -->
-    <div class="relative flex flex-col w-full overflow-auto text-gray-700 bg-white shadow-md rounded-xl">
+    <!-- 📟 Tableau météo -->
+    <div id="pdf-section" class="relative flex flex-col w-full overflow-auto text-gray-700 bg-white shadow-md rounded-xl">
       <table class="w-full min-w-max text-left table-auto">
         <thead>
           <tr>
@@ -49,6 +57,9 @@
                 class="font-semibold"
               >
                 {{ entry.temp }} °C
+                <span v-if="entry.temp >= 30">☀️</span>
+                <span v-else-if="entry.temp < 10">❄️</span>
+                <span v-else>⛅️</span>
               </span>
             </td>
           </tr>
@@ -85,21 +96,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import SearchBar from '@/components/SearchBar.vue'
 import { useMeteoTable } from '~~/composables/useMeteoTable'
 import { useExport } from '@/composables/useExport'
+
+// ✅ Tu n'as PLUS besoin de réimporter html2canvas ou jsPDF ici
+// car c'est déjà géré dans useMeteoTable !!!
 
 const props = defineProps<{ search: string; date: string }>()
 const emit = defineEmits(['update:search', 'update:date'])
 
 const searchValue = computed({
   get: () => props.search,
-  set: (val) => emit('update:search', val)
+  set: val => emit('update:search', val)
 })
 const searchDate = computed({
   get: () => props.date,
-  set: (val) => emit('update:date', val)
+  set: val => emit('update:date', val)
 })
 
 const {
@@ -108,7 +122,10 @@ const {
   paginated: paginatedHours,
   filtered: filteredHours,
   nextPage,
-  prevPage
+  prevPage,
+  isDark,
+  toggleDark,
+  exportPDF // ✅ Ici on récupère correctement exportPDF
 } = useMeteoTable(searchValue, searchDate)
 
 const { exportToCSV, exportToXLSX } = useExport()
