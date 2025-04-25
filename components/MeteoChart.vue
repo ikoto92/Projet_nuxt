@@ -1,4 +1,5 @@
 <template>
+ <div class="bg-white dark:bg-gray-900 text-black dark:text-white p-4 rounded shadow">
   <div class="my-6">
     <div v-if="!chartData.labels.length" class="text-center text-gray-500 py-6">
       ⏳ Chargement du graphique...
@@ -11,6 +12,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">

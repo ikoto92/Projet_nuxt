@@ -1,9 +1,12 @@
 <template>
+   <div class="bg-white dark:bg-gray-900 text-black dark:text-white p-4 rounded shadow">
   <div class="my-6 space-y-6 mx-[30px]">
     <!-- 🌙 Toggle mode sombre -->
     <button @click="toggleDark" class="fixed top-4 right-4 z-50 px-3 py-1 bg-gray-700 text-white rounded">
       {{ isDark ? '☀️ Mode clair' : '🌙 Mode sombre' }}
     </button>
+   
+  
 
     <!-- 🔍 Barre de recherche combinée -->
     <SearchBar v-model="searchValue" v-model:date="searchDate" />
@@ -92,6 +95,8 @@
         Suivant ▶
       </button>
     </div>
+  </div>
+  
   </div>
 </template>
 

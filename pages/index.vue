@@ -1,4 +1,5 @@
 <template>
+  <div class="bg-white dark:bg-gray-900 text-black dark:text-white p-4 rounded shadow">
   <div class="mx-[20px] my-6">
     <h1 class="text-2xl font-bold mb-6">🌤️ Prévisions météo - Paris</h1>
 
@@ -19,6 +20,7 @@
         Open-Meteo
       </a>
     </footer>
+  </div>
   </div>
 </template>
 
