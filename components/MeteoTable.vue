@@ -3,20 +3,22 @@
     <!-- 🔍 Barre de recherche -->
     <SearchBar v-model="searchValue" />
 
-    <!-- 📤 Export -->
-    <div class="flex flex-wrap gap-2">
-      <button @click="exportData('csv', false)" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        🔄 Export page (CSV)
-      </button>
-      <button @click="exportData('csv', true)" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        📦 Export complet (CSV)
-      </button>
-      <button @click="exportData('xlsx', false)" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-        🔄 Export page (XLSX)
-      </button>
-      <button @click="exportData('xlsx', true)" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-        📦 Export complet (XLSX)
-      </button>
+      <!-- 📤 Export -->
+    <div class="flex justify-center">
+      <div class="flex flex-wrap gap-2 justify-center">
+        <button @click="exportData('csv', false)" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          🔄 Export page (CSV)
+        </button>
+        <button @click="exportData('csv', true)" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          📦 Export complet (CSV)
+        </button>
+        <button @click="exportData('xlsx', false)" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+          🔄 Export page (XLSX)
+        </button>
+        <button @click="exportData('xlsx', true)" class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+          📦 Export complet (XLSX)
+        </button>
+      </div>
     </div>
 
     <!-- 🧾 Tableau météo -->
